@@ -3,6 +3,9 @@
 #include <string>
 #include "Process.h"
 #include <list>
+#include "Tree.h"
+#include <algorithm>
+#include <iterator>
 
 std::string* GetLastErrorAsString()
 {
@@ -87,6 +90,41 @@ std::list<Process*> MapData(std::string data)
 	return list;
 }
 
+std::list<Process*> processes;
+
+std::list<Process*> getChildren(int PID)
+{
+	std::list<Process*> childrenList;
+	std::copy_if(processes.begin(), processes.end(), std::back_inserter(childrenList), [PID](Process* proc)
+	{
+		return proc->PPID == PID;
+	});
+
+	return childrenList;
+}
+
+void printTree(std::list<Process*> list, int tabs = 0)
+{
+	for (auto process : list)
+	{
+		if (!process->check)
+		{
+			process->check = true;
+			for (int i = 0; i < tabs; i++)
+				std::cout << "\t";
+			std::cout << process->PID << " - " << process->exe << "\n";
+
+			/*std::list<Process*> childrenList;
+			std::copy_if(list.begin(), list.end(), std::back_inserter(childrenList), [process](Process* proc)
+			{
+				return proc->PPID == process->PID;
+			});*/
+
+			printTree(getChildren(process->PID), tabs + 1);
+		}
+	}
+}
+
 void main()
 {
 	HANDLE hToken;
@@ -106,10 +144,14 @@ void main()
 		return;
 	}
 
-	auto list = MapData(std::string(pData));
+	processes = MapData(std::string(pData));
 
-	for (auto process : list)
+	//auto processTree = new Tree(list.front(), nullptr);
+
+	processes.sort([](const Process* p1, const Process* p2)
 	{
-		std::cout << process->PID << " + " << process->exe << "\n";
-	}
+		return p1->PPID < p2->PPID;
+	});
+
+	printTree(processes);
 }

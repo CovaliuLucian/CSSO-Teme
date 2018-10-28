@@ -4,6 +4,7 @@
 Process::Process(std::string data)
 {
 	map(data);
+	check = false;
 }
 
 void Process::map(std::string data)
