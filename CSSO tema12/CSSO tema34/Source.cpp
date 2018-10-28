@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <iostream>
+#include <TlHelp32.h>
 
 std::string* GetLastErrorAsString()
 {
@@ -15,8 +16,45 @@ std::string* GetLastErrorAsString()
 	return new std::string(messageBuffer, size);
 }
 
+std::string readProcesses()
+{
+	HANDLE hProcess = nullptr;
+	PROCESSENTRY32 pe32;
+
+	std::string toReturn = std::string();
+
+	//cer un snapshot la procese
+	auto hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (hProcessSnap == INVALID_HANDLE_VALUE)
+	{
+		printf("CreateToolhelp32Snapshot failed.err = %d \n", GetLastError());
+		return toReturn;
+	}
+	//initializez dwSize cu dimensiunea structurii.
+	pe32.dwSize = sizeof(PROCESSENTRY32);
+	//obtin informatii despre primul proces
+	if (!Process32First(hProcessSnap, &pe32))
+	{
+		printf("Process32First failed. err = %d \n", GetLastError());
+		CloseHandle(hProcessSnap); //inchidem snapshot-ul
+		return toReturn;
+	}
+	do
+	{
+		char* process = new char[200];
+		sprintf_s(process, 200, "%d--%d--%s\n", pe32.th32ParentProcessID, pe32.th32ProcessID, pe32.szExeFile);
+		toReturn.append(process);
+	}
+	while (Process32Next(hProcessSnap, &pe32));
+
+	CloseHandle(hProcess);
+
+	return toReturn;
+}
+
 void main()
 {
+	std::string processData = readProcesses();
 
 	HANDLE hData = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, 1024 * 1024, "CSSO");
 	if (hData == nullptr)
@@ -33,9 +71,7 @@ void main()
 		return;
 	}
 
-	std::string testdata = "abc";
-	//memcpy(pData, testdata.c_str(), testdata.size());
-	strcpy_s(pData, testdata.length() + 1, testdata.c_str());
+	strcpy_s(pData, processData.length() + 1, processData.c_str());
 
 	std::cout << "Done";
 

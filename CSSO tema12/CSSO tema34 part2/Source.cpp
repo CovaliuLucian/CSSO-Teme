@@ -1,5 +1,8 @@
 #include <iostream>
 #include <Windows.h>
+#include <string>
+#include "Process.h"
+#include <list>
 
 std::string* GetLastErrorAsString()
 {
@@ -64,20 +67,38 @@ BOOL SetPrivilege(
 	return TRUE;
 }
 
+std::list<Process*> MapData(std::string data)
+{
+	std::list<Process*> list = std::list<Process*>();
 
+	std::string delimiter = "\n";
+	int count = 0;
+	size_t pos;
+	std::string token;
+	while ((pos = data.find(delimiter)) != std::string::npos)
+	{
+		token = data.substr(0, pos);
+		auto process = new Process(token);
+		list.push_back(process);
+		count++;
+		data.erase(0, pos + delimiter.length());
+	}
+
+	return list;
+}
 
 void main()
 {
 	HANDLE hToken;
 	if (!OpenProcessToken(GetCurrentProcess(),
-		TOKEN_ALL_ACCESS, &hToken))
+	                      TOKEN_ALL_ACCESS, &hToken))
 		return;
 
 	SetPrivilege(hToken, "SeDebugPrivilege", true);
 
 	auto file = OpenFileMappingA(FILE_MAP_ALL_ACCESS, false, "CSSO");
 
-	char *pData = (char*)MapViewOfFile(file, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+	char* pData = (char*)MapViewOfFile(file, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 	if (pData == nullptr)
 	{
 		std::cout << "Cannot get pointer to file mapping. ", GetLastErrorAsString();
@@ -85,5 +106,10 @@ void main()
 		return;
 	}
 
-	std::cout << '\n' << pData;
+	auto list = MapData(std::string(pData));
+
+	for (auto process : list)
+	{
+		std::cout << process->PID << " + " << process->exe << "\n";
+	}
 }
