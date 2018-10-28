@@ -6,6 +6,7 @@
 #include "Tree.h"
 #include <algorithm>
 #include <iterator>
+#include <map>
 
 std::string* GetLastErrorAsString()
 {
@@ -91,6 +92,8 @@ std::list<Process*> MapData(std::string data)
 }
 
 std::list<Process*> processes;
+int count;
+std::map<int, int> map;
 
 std::list<Process*> getChildren(int PID)
 {
@@ -103,12 +106,26 @@ std::list<Process*> getChildren(int PID)
 	return childrenList;
 }
 
+
+void kill_by_pid(int pid)
+{
+	TerminateProcess(OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid), 0);
+}
+
 void printTree(std::list<Process*> list, int tabs = 0)
 {
 	for (auto process : list)
 	{
 		if (!process->check)
 		{
+			if (tabs == 0)
+			{
+				std::cout << "\n[arbore " << count << "]\n";
+				//map.insert(count, process->PID);
+				map[count] = process->PID;
+				count++;
+			}
+
 			process->check = true;
 			for (int i = 0; i < tabs; i++)
 				std::cout << "\t";
@@ -123,6 +140,22 @@ void printTree(std::list<Process*> list, int tabs = 0)
 			printTree(getChildren(process->PID), tabs + 1);
 		}
 	}
+}
+
+void KILL(std::list<Process*> list)
+{
+	for (auto process : list)
+	{
+		KILL(getChildren(process->PID));
+		kill_by_pid(process->PID);
+	}
+}
+
+void KILL(int number)
+{
+	int pid = map[number];
+	KILL(getChildren(pid));
+	kill_by_pid(pid);
 }
 
 void main()
@@ -154,4 +187,11 @@ void main()
 	});
 
 	printTree(processes);
+
+
+	int toKill;
+
+	std::cin >> toKill;
+
+	KILL(toKill);
 }
