@@ -149,5 +149,4 @@ void main()
 		if (!SetEvent(doneEvent))
 			std::cout << "Error creating event done 2: " << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 	}
-	//std::cin.ignore();
 }

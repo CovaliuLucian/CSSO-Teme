@@ -42,11 +42,11 @@ std::string GetRandom()
 {
 	//srand(time(nullptr));
 	const auto a = rand() % 100;
-	const auto sum = a * 2;
+	const auto b = a * 2;
 
 	char buffer[20];
 
-	snprintf(buffer, 20, "%i %i", a, sum);
+	snprintf(buffer, 20, "%i %i", a, b);
 	return std::string(buffer);
 }
 
@@ -70,7 +70,7 @@ HANDLE WaitEvent(std::string name)
 	return handler;
 }
 
-void main()
+void CreateChild()
 {
 	PROCESS_INFORMATION infos;
 	STARTUPINFO start;
@@ -87,6 +87,11 @@ void main()
 
 	CloseHandle(infos.hProcess);
 	CloseHandle(infos.hThread);
+}
+
+void main()
+{
+	CreateChild();
 	bool first = true;
 	HANDLE writeEvent = nullptr;
 	CreateEvent("done");
@@ -103,17 +108,14 @@ void main()
 		}
 
 		first = false;
+
 		WriteMemory(GetRandom());
 
 		writeEvent = CreateEvent("write");
 		if (!SetEvent(writeEvent))
 			std::cout << "Error setting event write 1: " << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 
-		//std::cout << i + 1 << ".Done, waiting...\n";
-		//Sleep(10);
 	}
-
-	Sleep(1000);
 
 	std::cin.ignore();
 }
