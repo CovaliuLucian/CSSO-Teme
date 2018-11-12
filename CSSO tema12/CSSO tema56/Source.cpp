@@ -40,7 +40,7 @@ void WriteMemory(std::string text)
 
 std::string GetRandom()
 {
-	srand(time(nullptr));
+	//srand(time(nullptr));
 	const auto a = rand() % 100;
 	const auto sum = a * 2;
 
@@ -54,7 +54,7 @@ HANDLE CreateEvent(std::string name)
 {
 	auto handler = CreateEvent(NULL, false, true, name.c_str());
 	if (!handler)
-		std::cout << "Error creating event: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+		std::cout << "Error creating event: " << name << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 
 	return handler;
 }
@@ -64,7 +64,7 @@ HANDLE WaitEvent(std::string name)
 	auto handler = OpenEvent(EVENT_ALL_ACCESS, false, name.c_str());
 
 	if (!handler)
-		std::cout << "Error waiting 1: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+		std::cout << "Error waiting 1: " << name << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 	WaitForSingleObject(handler, INFINITE);
 
 	return handler;
@@ -82,22 +82,24 @@ void main()
 	if (!CreateProcess(NULL, "\"C:\\Users\\lucia\\Source\\Repos\\CSSO-Teme\\CSSO tema12\\Debug\\CSSO tema56 part2.exe\"",
 	                   NULL, NULL, false, 0, NULL, NULL, &start, &infos))
 	{
-		std::cout << "Error getting PID: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+		std::cout << "Error getting PID: " << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 	}
 
 	CloseHandle(infos.hProcess);
 	CloseHandle(infos.hThread);
 	bool first = true;
 	HANDLE writeEvent = nullptr;
+	CreateEvent("done");
 
-	for (int i = 0; i < 20; ++i)
+
+	for (int i = 0; i < 200; ++i)
 	{
 		if (!first)
 		{
 			if (!CloseHandle(WaitEvent("done")))
-				std::cout << "Error closing event done 1: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+				std::cout << "Error closing event done 1: " << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 			if (!CloseHandle(writeEvent))
-				std::cout << "Error closing event write 1: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+				std::cout << "Error closing event write 1: " << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 		}
 
 		first = false;
@@ -105,12 +107,11 @@ void main()
 
 		writeEvent = CreateEvent("write");
 		if (!SetEvent(writeEvent))
-			std::cout << "Error setting event write 1: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+			std::cout << "Error setting event write 1: " << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 
 		//std::cout << i + 1 << ".Done, waiting...\n";
-		Sleep(200);
+		//Sleep(10);
 	}
-
 
 	Sleep(1000);
 

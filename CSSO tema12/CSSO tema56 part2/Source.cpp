@@ -88,7 +88,7 @@ HANDLE CreateEvent(std::string name)
 {
 	auto handler = CreateEvent(NULL, false, true, name.c_str());
 	if (!handler)
-		std::cout << "Error creating event: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+		std::cout << "Error creating event 2: " << name << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 
 	return handler;
 }
@@ -98,7 +98,7 @@ HANDLE WaitEvent(std::string name)
 	auto handler = OpenEvent(EVENT_ALL_ACCESS, false, name.c_str());
 
 	if (!handler)
-		std::cout << "Error waiting: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+		std::cout << "Error waiting 2: " << name << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 	WaitForSingleObject(handler, INFINITE);
 
 	return handler;
@@ -125,10 +125,10 @@ void main()
 		Sleep(10);
 
 		if(!CloseHandle(WaitEvent("write")))
-			cout << "Error closing event write 2: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+			cout << "Error closing event write 2: " << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 
 		if (doneEvent && !CloseHandle(doneEvent))
-			std::cout << "Error closing event done 2: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+			std::cout << "Error closing event done 2: " << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 
 		auto input = ReadMemory();
 
@@ -147,7 +147,7 @@ void main()
 
 		doneEvent = CreateEvent("done");
 		if (!SetEvent(doneEvent))
-			std::cout << "Error creating event done 2: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+			std::cout << "Error creating event done 2: " << GetLastError() << ". Message:" << GetLastErrorAsString() << '\n';
 	}
 	//std::cin.ignore();
 }
