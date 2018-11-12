@@ -1,6 +1,8 @@
 #include <Windows.h>
 #include <string>
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 
 std::string* GetLastErrorAsString()
 {
@@ -36,10 +38,20 @@ void WriteMemory(std::string text)
 	strcpy_s(pData, text.length() + 1, text.c_str());
 }
 
+std::string GetRandom()
+{
+	srand(time(nullptr));
+	const auto a = rand() % 100;
+	const auto sum = a * 2;
+
+	char buffer[20];
+
+	snprintf(buffer, 20, "%i %i",a,sum);
+	return std::string(buffer);
+}
+
 void main()
 {
-	WriteMemory("fuck off");
-
 	PROCESS_INFORMATION infos;
 	STARTUPINFO start;
 	ZeroMemory(&start, sizeof start);
@@ -54,7 +66,11 @@ void main()
 	CloseHandle(infos.hProcess);
 	CloseHandle(infos.hThread);
 
+	WriteMemory(GetRandom());
+
 	std::cout << "Done, waiting...\n";
+
+	Sleep(1000);
 
 	std::cin.ignore();
 }

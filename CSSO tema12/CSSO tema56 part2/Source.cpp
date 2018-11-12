@@ -2,6 +2,9 @@
 #include <iostream>
 #include <TlHelp32.h>
 #include <string>
+#include <sstream>
+
+using namespace std;
 
 std::string* GetLastErrorAsString()
 {
@@ -75,7 +78,7 @@ std::string ReadMemory()
 	{
 		std::cout << "Cannot get pointer to file mapping. ", GetLastErrorAsString();
 		CloseHandle(file);
-		return "";
+		return "!!!Error!!!";
 	}
 
 	return std::string(pData);
@@ -83,18 +86,34 @@ std::string ReadMemory()
 
 void main()
 {
-	//if (!AttachConsole(ATTACH_PARENT_PROCESS))
-	//	std::cout << "Error attaching to console: " << GetLastErrorAsString();
+	/*if (!AttachConsole(ATTACH_PARENT_PROCESS))
+		std::cout << "Error attaching to console: " << GetLastError() << ". Message:" << GetLastErrorAsString();*/
 
 	HANDLE hToken;
 	if (!OpenProcessToken(GetCurrentProcess(),
 		TOKEN_ALL_ACCESS, &hToken))
-		return;
+		cout << "Error getting PID: " << GetLastError() << ". Message:" << GetLastErrorAsString();
 
 	//SetPrivilege(hToken, "SeDebugPrivilege", true);
 
+	//Sleep(2000);
 
-	std::cout << ReadMemory() << "\n";
+	auto input = ReadMemory();
+
+	istringstream ss(input);
+
+	string first, second;
+
+	getline(ss, first, ' ');
+	getline(ss, second, ' ');
+
+	int a = stoi(first);
+	int b = stoi(second);
+
+	if(b == a*2)
+		cout << a << "*2==" << b << "\n";
+	else
+		cout << a << "*2!=" << b << "\n";
 	
-	std::cin.ignore();
+	//std::cin.ignore();
 }
