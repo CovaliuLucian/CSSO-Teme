@@ -84,6 +84,26 @@ std::string ReadMemory()
 	return std::string(pData);
 }
 
+HANDLE CreateEvent(std::string name)
+{
+	auto handler = CreateEvent(NULL, false, true, name.c_str());
+	if (!handler)
+		std::cout << "Error creating event: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+
+	return handler;
+}
+
+HANDLE WaitEvent(std::string name)
+{
+	auto handler = OpenEvent(EVENT_ALL_ACCESS, false, name.c_str());
+
+	if (!handler)
+		std::cout << "Error waiting: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+	WaitForSingleObject(handler, INFINITE);
+
+	return handler;
+}
+
 void main()
 {
 	/*if (!AttachConsole(ATTACH_PARENT_PROCESS))
@@ -98,22 +118,36 @@ void main()
 
 	//Sleep(2000);
 
-	auto input = ReadMemory();
+	HANDLE doneEvent = nullptr;
+	int count = 0;
+	while (true) {
 
-	istringstream ss(input);
+		Sleep(10);
 
-	string first, second;
+		if(!CloseHandle(WaitEvent("write")))
+			cout << "Error closing event write 2: " << GetLastError() << ". Message:" << GetLastErrorAsString();
 
-	getline(ss, first, ' ');
-	getline(ss, second, ' ');
+		if (doneEvent && !CloseHandle(doneEvent))
+			std::cout << "Error closing event done 2: " << GetLastError() << ". Message:" << GetLastErrorAsString();
 
-	int a = stoi(first);
-	int b = stoi(second);
+		auto input = ReadMemory();
 
-	if(b == a*2)
-		cout << a << "*2==" << b << "\n";
-	else
-		cout << a << "*2!=" << b << "\n";
-	
+		istringstream ss(input);
+
+		string first, second;
+
+		getline(ss, first, ' ');
+		getline(ss, second, ' ');
+
+		int a = stoi(first);
+		int b = stoi(second);
+
+		if (b == a * 2)
+			cout << ++count << " :" << a << "*2==" << b << "\n";
+
+		doneEvent = CreateEvent("done");
+		if (!SetEvent(doneEvent))
+			std::cout << "Error creating event done 2: " << GetLastError() << ". Message:" << GetLastErrorAsString();
+	}
 	//std::cin.ignore();
 }
