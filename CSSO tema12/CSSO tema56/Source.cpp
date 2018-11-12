@@ -40,6 +40,21 @@ void main()
 {
 	WriteMemory("fuck off");
 
-	std::cout << "Done, waiting...";
+	PROCESS_INFORMATION infos;
+	STARTUPINFO start;
+	ZeroMemory(&start, sizeof start);
+	start.cb = sizeof(start);
+	ZeroMemory(&infos, sizeof infos);
+
+	if(!CreateProcess(NULL, "\"C:\\Users\\lucia\\Source\\Repos\\CSSO-Teme\\CSSO tema12\\Debug\\CSSO tema56 part2.exe\"", NULL, NULL, false, 0, NULL, NULL, &start, &infos))
+	{
+		std::cout << "Error creating process: " << GetLastError() << "\n";
+	}
+
+	CloseHandle(infos.hProcess);
+	CloseHandle(infos.hThread);
+
+	std::cout << "Done, waiting...\n";
+
 	std::cin.ignore();
 }

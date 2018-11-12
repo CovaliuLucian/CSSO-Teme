@@ -83,14 +83,18 @@ std::string ReadMemory()
 
 void main()
 {
+	//if (!AttachConsole(ATTACH_PARENT_PROCESS))
+	//	std::cout << "Error attaching to console: " << GetLastErrorAsString();
+
 	HANDLE hToken;
 	if (!OpenProcessToken(GetCurrentProcess(),
 		TOKEN_ALL_ACCESS, &hToken))
 		return;
 
-	SetPrivilege(hToken, "SeDebugPrivilege", true);
+	//SetPrivilege(hToken, "SeDebugPrivilege", true);
 
 
-	std::cout << ReadMemory();
+	std::cout << ReadMemory() << "\n";
 	
+	std::cin.ignore();
 }
